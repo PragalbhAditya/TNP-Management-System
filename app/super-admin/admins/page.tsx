@@ -6,7 +6,7 @@ import {
     Crown, Users, Search, RefreshCw, Loader2,
     CheckCircle, XCircle, Trash2, UserCheck,
     ArrowUpCircle, ArrowDownCircle, Mail, Shield,
-    ShieldOff, GraduationCap, Plus
+    ShieldOff, GraduationCap, Plus, KeyRound, X
 } from "lucide-react";
 
 export default function SuperAdminAdminsPage() {
@@ -16,6 +16,9 @@ export default function SuperAdminAdminsPage() {
     const [tab, setTab] = useState<"admins" | "promote">("admins");
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+    const [resetPasswordId, setResetPasswordId] = useState<string | null>(null);
+    const [newPassword, setNewPassword] = useState("");
+    const [isResetting, setIsResetting] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
     const showToast = (message: string, type: "success" | "error") => {
@@ -96,13 +99,38 @@ export default function SuperAdminAdminsPage() {
         }
     };
 
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!resetPasswordId || !newPassword) return;
+        setIsResetting(true);
+        try {
+            const res = await fetch(`/api/super-admin/users/${resetPasswordId}/reset-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ newPassword }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setResetPasswordId(null);
+                setNewPassword("");
+                showToast("Password reset successfully!", "success");
+            } else {
+                showToast(data.error || "Failed to reset password.", "error");
+            }
+        } catch {
+            showToast("Network error.", "error");
+        } finally {
+            setIsResetting(false);
+        }
+    };
+
     return (
         <DashboardLayout role="super-admin">
             {/* Toast */}
             {toast && (
                 <div className={`fixed top-6 right-6 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold transition-all ${toast.type === "success"
-                        ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
-                        : "bg-red-500/20 border border-red-500/40 text-red-300"
+                    ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
+                    : "bg-red-500/20 border border-red-500/40 text-red-300"
                     }`}>
                     {toast.type === "success" ? <CheckCircle size={18} /> : <XCircle size={18} />}
                     {toast.message}
@@ -177,8 +205,8 @@ export default function SuperAdminAdminsPage() {
                         ].map(t => (
                             <button key={t.key} onClick={() => setTab(t.key)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${tab === t.key
-                                        ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                        : "bg-white/5 text-gray-400 hover:text-white"
+                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                    : "bg-white/5 text-gray-400 hover:text-white"
                                     }`}>
                                 <t.icon size={13} />
                                 {t.label}
@@ -274,6 +302,13 @@ export default function SuperAdminAdminsPage() {
                                                                 <ArrowDownCircle size={14} /> Demote
                                                             </button>
                                                             <button
+                                                                onClick={() => setResetPasswordId(admin._id)}
+                                                                title="Reset Password"
+                                                                className="p-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20 transition-all"
+                                                            >
+                                                                <KeyRound size={16} />
+                                                            </button>
+                                                            <button
                                                                 onClick={() => setDeleteConfirm(admin._id)}
                                                                 title="Delete Account"
                                                                 className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-400/10 border border-transparent hover:border-red-400/20 transition-all"
@@ -355,6 +390,40 @@ export default function SuperAdminAdminsPage() {
                     Promoted admins are auto-verified and can immediately access the admin dashboard. Only super-admins can change roles.
                 </p>
             </div>
+
+            {/* Reset Password Modal */}
+            {resetPasswordId && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="w-full max-w-sm glass-dark border border-amber-500/20 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
+                            <h2 className="text-xl font-bold text-white">Reset Password</h2>
+                            <button onClick={() => setResetPasswordId(null)} className="text-gray-400 hover:text-white"><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleResetPassword} className="p-8 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">New Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    minLength={6}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
+                                    placeholder="Enter new password"
+                                    autoFocus
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isResetting}
+                                className="w-full py-3 bg-amber-500 text-black font-black rounded-xl shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-all disabled:opacity-50"
+                            >
+                                {isResetting ? <Loader2 size={18} className="animate-spin mx-auto" /> : "Confirm Reset"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </DashboardLayout>
     );
 }

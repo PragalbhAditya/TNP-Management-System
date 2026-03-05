@@ -18,7 +18,8 @@ export type AuditAction =
     | 'ADMIN_LOGIN'
     | 'NOTICE_CREATED'
     | 'NOTICE_UPDATED'
-    | 'NOTICE_DELETED';
+    | 'NOTICE_DELETED'
+    | 'PASSWORD_RESET';
 
 export interface IAuditLog extends Document {
     action: AuditAction;

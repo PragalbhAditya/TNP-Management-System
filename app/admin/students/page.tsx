@@ -21,9 +21,12 @@ import {
     Briefcase,
     Calendar,
     Award,
-    Trash2
+    Trash2,
+    KeyRound
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { formatDate } from "@/lib/utils";
+import { UserRole } from "@/types/user";
 
 export default function AdminStudentsPage() {
     const [students, setStudents] = useState<any[]>([]);
@@ -37,6 +40,11 @@ export default function AdminStudentsPage() {
     const [branchFilter, setBranchFilter] = useState("all");
     const [verificationFilter, setVerificationFilter] = useState("all");
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+    const [resetPasswordId, setResetPasswordId] = useState<string | null>(null);
+    const [newPassword, setNewPassword] = useState("");
+    const [isResetting, setIsResetting] = useState(false);
+    const { data: session } = useSession();
+    const isSuperAdmin = (session?.user as any)?.role === UserRole.SUPER_ADMIN;
 
     const filteredStudents = students.filter(student => {
         const matchesSearch =
@@ -165,6 +173,31 @@ export default function AdminStudentsPage() {
             console.error("Failed to fetch student history:", error);
         } finally {
             setIsHistoryLoading(false);
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!resetPasswordId || !newPassword) return;
+        setIsResetting(true);
+        try {
+            const res = await fetch(`/api/super-admin/users/${resetPasswordId}/reset-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ newPassword }),
+            });
+            if (res.ok) {
+                setResetPasswordId(null);
+                setNewPassword("");
+                alert("Password reset successfully!");
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to reset password.");
+            }
+        } catch (error) {
+            console.error("Failed to reset password:", error);
+        } finally {
+            setIsResetting(false);
         }
     };
 
@@ -375,8 +408,6 @@ export default function AdminStudentsPage() {
                                                                     <span>Delete Student</span>
                                                                 </button>
 
-                                                                <div className="h-px bg-white/5 my-1" />
-
                                                                 <button
                                                                     onClick={() => {
                                                                         handleToggleBlock(student._id, !!student.isBlocked);
@@ -399,6 +430,22 @@ export default function AdminStudentsPage() {
                                                                         </>
                                                                     )}
                                                                 </button>
+
+                                                                {isSuperAdmin && (
+                                                                    <>
+                                                                        <div className="h-px bg-white/5 my-1" />
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setResetPasswordId(student._id);
+                                                                                setOpenMenuId(null);
+                                                                            }}
+                                                                            className="w-full flex items-center space-x-3 px-4 py-2.5 text-xs text-amber-400 hover:bg-amber-400/10 transition-all text-left"
+                                                                        >
+                                                                            <KeyRound size={14} />
+                                                                            <span>Reset Password</span>
+                                                                        </button>
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         </>
                                                     )}
@@ -414,257 +461,310 @@ export default function AdminStudentsPage() {
             </div>
 
             {/* Edit Student Modal */}
-            {editingStudent && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-lg glass-dark border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Edit Student Profile</h2>
-                                <p className="text-xs text-gray-500 mt-1">Update information for {editingStudent.name}</p>
-                            </div>
-                            <button
-                                onClick={() => setEditingStudent(null)}
-                                className="p-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-all"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleUpdateStudent} className="p-8 space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Full Name</label>
-                                    <input
-                                        type="text"
-                                        value={editingStudent.name}
-                                        onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
-                                    />
+            {
+                editingStudent && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="w-full max-w-lg glass-dark border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+                            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">Edit Student Profile</h2>
+                                    <p className="text-xs text-gray-500 mt-1">Update information for {editingStudent.name}</p>
                                 </div>
-
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Email Address</label>
-                                    <input
-                                        type="email"
-                                        value={editingStudent.email}
-                                        onChange={(e) => setEditingStudent({ ...editingStudent, email: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Roll Number</label>
-                                    <input
-                                        type="text"
-                                        value={editingStudent.rollNumber || ''}
-                                        onChange={(e) => setEditingStudent({ ...editingStudent, rollNumber: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">CGPA</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={editingStudent.cgpa || ''}
-                                        onChange={(e) => setEditingStudent({ ...editingStudent, cgpa: parseFloat(e.target.value) })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Branch</label>
-                                    <input
-                                        type="text"
-                                        value={editingStudent.branch || ''}
-                                        onChange={(e) => setEditingStudent({ ...editingStudent, branch: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Date of Birth</label>
-                                    <input
-                                        type="date"
-                                        value={editingStudent.dateOfBirth ? new Date(editingStudent.dateOfBirth).toISOString().split('T')[0] : ''}
-                                        onChange={(e) => setEditingStudent({ ...editingStudent, dateOfBirth: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all [color-scheme:dark]"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="pt-4 flex space-x-4">
                                 <button
-                                    type="button"
                                     onClick={() => setEditingStudent(null)}
-                                    className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/10 transition-all"
+                                    className="p-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-all"
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-                                >
-                                    Save Changes
+                                    <X size={20} />
                                 </button>
                             </div>
-                        </form>
+
+                            <form onSubmit={handleUpdateStudent} className="p-8 space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2 col-span-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Full Name</label>
+                                        <input
+                                            type="text"
+                                            value={editingStudent.name}
+                                            onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 col-span-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Email Address</label>
+                                        <input
+                                            type="email"
+                                            value={editingStudent.email}
+                                            onChange={(e) => setEditingStudent({ ...editingStudent, email: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Roll Number</label>
+                                        <input
+                                            type="text"
+                                            value={editingStudent.rollNumber || ''}
+                                            onChange={(e) => setEditingStudent({ ...editingStudent, rollNumber: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">CGPA</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={editingStudent.cgpa || ''}
+                                            onChange={(e) => setEditingStudent({ ...editingStudent, cgpa: parseFloat(e.target.value) })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Branch</label>
+                                        <input
+                                            type="text"
+                                            value={editingStudent.branch || ''}
+                                            onChange={(e) => setEditingStudent({ ...editingStudent, branch: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Date of Birth</label>
+                                        <input
+                                            type="date"
+                                            value={editingStudent.dateOfBirth ? new Date(editingStudent.dateOfBirth).toISOString().split('T')[0] : ''}
+                                            onChange={(e) => setEditingStudent({ ...editingStudent, dateOfBirth: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all [color-scheme:dark]"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex space-x-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditingStudent(null)}
+                                        className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/10 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* History Modal */}
-            {historyStudent && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-2xl glass-dark border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[85vh] flex flex-col">
-                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
-                            <div className="flex items-center space-x-4">
-                                <div className="p-3 bg-primary/10 rounded-2xl text-primary">
-                                    <History size={24} />
+            {
+                historyStudent && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="w-full max-w-2xl glass-dark border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[85vh] flex flex-col">
+                            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                <div className="flex items-center space-x-4">
+                                    <div className="p-3 bg-primary/10 rounded-2xl text-primary">
+                                        <History size={24} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-white">Placement Journey</h2>
+                                        <p className="text-xs text-gray-400 mt-1">Tracks and history for {historyStudent.name}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-white">Placement Journey</h2>
-                                    <p className="text-xs text-gray-400 mt-1">Tracks and history for {historyStudent.name}</p>
-                                </div>
+                                <button
+                                    onClick={() => {
+                                        setHistoryStudent(null);
+                                        setStudentHistory(null);
+                                    }}
+                                    className="p-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-all"
+                                >
+                                    <X size={20} />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => {
-                                    setHistoryStudent(null);
-                                    setStudentHistory(null);
-                                }}
-                                className="p-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-all"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
 
-                        <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                            {isHistoryLoading ? (
-                                <div className="flex flex-col items-center justify-center p-20 space-y-4">
-                                    <Loader2 className="animate-spin text-primary" size={40} />
-                                    <p className="text-sm text-gray-500 font-medium tracking-widest uppercase">Fetching Records...</p>
-                                </div>
-                            ) : studentHistory ? (
-                                <>
-                                    {/* Application History */}
-                                    <section className="space-y-4">
-                                        <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] flex items-center">
-                                            <Briefcase size={14} className="mr-2 text-primary" /> Recent Applications
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {studentHistory.applications.length === 0 ? (
-                                                <div className="p-6 rounded-2xl border border-white/5 bg-white/5 text-center text-gray-500 text-sm">
-                                                    No applications recorded yet.
-                                                </div>
-                                            ) : (
-                                                studentHistory.applications.map((app: any) => (
-                                                    <div key={app._id} className="p-4 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all flex items-center justify-between group">
-                                                        <div className="flex items-center space-x-4">
-                                                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center font-bold text-gray-400 group-hover:text-primary transition-colors">
-                                                                {app.drive?.companyName[0]}
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-bold text-white">{app.drive?.companyName}</p>
-                                                                <p className="text-[10px] text-gray-500">{app.drive?.role} • {formatDate(app.appliedAt)}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${app.status === 'placed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                                                                app.status === 'rejected' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                                                                    'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-                                                                }`}>
-                                                                {app.status}
-                                                            </span>
-                                                        </div>
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+                                {isHistoryLoading ? (
+                                    <div className="flex flex-col items-center justify-center p-20 space-y-4">
+                                        <Loader2 className="animate-spin text-primary" size={40} />
+                                        <p className="text-sm text-gray-500 font-medium tracking-widest uppercase">Fetching Records...</p>
+                                    </div>
+                                ) : studentHistory ? (
+                                    <>
+                                        {/* Application History */}
+                                        <section className="space-y-4">
+                                            <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] flex items-center">
+                                                <Briefcase size={14} className="mr-2 text-primary" /> Recent Applications
+                                            </h3>
+                                            <div className="space-y-3">
+                                                {studentHistory.applications.length === 0 ? (
+                                                    <div className="p-6 rounded-2xl border border-white/5 bg-white/5 text-center text-gray-500 text-sm">
+                                                        No applications recorded yet.
                                                     </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </section>
-
-                                    {/* Interview Timeline */}
-                                    <section className="space-y-4">
-                                        <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] flex items-center">
-                                            <Calendar size={14} className="mr-2 text-accent" /> Interview Timeline
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {studentHistory.interviews.length === 0 ? (
-                                                <div className="p-6 rounded-2xl border border-white/5 bg-white/5 text-center text-gray-500 text-sm">
-                                                    No interview schedules found.
-                                                </div>
-                                            ) : (
-                                                studentHistory.interviews.map((interview: any) => (
-                                                    <div key={interview._id} className="p-4 rounded-2xl border border-white/5 bg-white/5 group border-l-4 border-l-primary">
-                                                        <div className="flex justify-between items-start">
-                                                            <div>
-                                                                <p className="text-sm font-bold text-white">{interview.drive?.companyName}</p>
-                                                                <p className="text-xs text-primary font-medium">{interview.interviewer}</p>
+                                                ) : (
+                                                    studentHistory.applications.map((app: any) => (
+                                                        <div key={app._id} className="p-4 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all flex items-center justify-between group">
+                                                            <div className="flex items-center space-x-4">
+                                                                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center font-bold text-gray-400 group-hover:text-primary transition-colors">
+                                                                    {app.drive?.companyName[0]}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-bold text-white">{app.drive?.companyName}</p>
+                                                                    <p className="text-[10px] text-gray-500">{app.drive?.role} • {formatDate(app.appliedAt)}</p>
+                                                                </div>
                                                             </div>
-                                                            <span className={`px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest ${interview.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                                interview.status === 'scheduled' ? 'bg-blue-500/10 text-blue-500' :
-                                                                    'bg-gray-500/10 text-gray-500'
-                                                                }`}>
-                                                                {interview.status}
-                                                            </span>
+                                                            <div className="text-right">
+                                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${app.status === 'placed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                                                                    app.status === 'rejected' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                                                                        'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                                                                    }`}>
+                                                                    {app.status}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className="mt-3 flex items-center text-[10px] text-gray-500 space-x-4">
-                                                            <span className="flex items-center"><Calendar size={12} className="mr-1" /> {formatDate(interview.startTime)}</span>
-                                                            <span className="flex items-center"><Award size={12} className="mr-1" /> {interview.score !== undefined ? `Result: ${interview.score}/10` : 'Result Pending'}</span>
-                                                        </div>
-                                                        {interview.feedback && (
-                                                            <p className="mt-2 p-2 bg-white/5 rounded-lg text-[10px] italic text-gray-400">
-                                                                "{interview.feedback}"
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </section>
-                                </>
-                            ) : null}
-                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </section>
 
-                        <div className="p-6 border-t border-white/5 bg-white/5 text-center">
-                            <p className="text-[10px] text-gray-500 font-medium">Placement data is synchronized with live recruitment drives.</p>
+                                        {/* Interview Timeline */}
+                                        <section className="space-y-4">
+                                            <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] flex items-center">
+                                                <Calendar size={14} className="mr-2 text-accent" /> Interview Timeline
+                                            </h3>
+                                            <div className="space-y-3">
+                                                {studentHistory.interviews.length === 0 ? (
+                                                    <div className="p-6 rounded-2xl border border-white/5 bg-white/5 text-center text-gray-500 text-sm">
+                                                        No interview schedules found.
+                                                    </div>
+                                                ) : (
+                                                    studentHistory.interviews.map((interview: any) => (
+                                                        <div key={interview._id} className="p-4 rounded-2xl border border-white/5 bg-white/5 group border-l-4 border-l-primary">
+                                                            <div className="flex justify-between items-start">
+                                                                <div>
+                                                                    <p className="text-sm font-bold text-white">{interview.drive?.companyName}</p>
+                                                                    <p className="text-xs text-primary font-medium">{interview.interviewer}</p>
+                                                                </div>
+                                                                <span className={`px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest ${interview.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                                    interview.status === 'scheduled' ? 'bg-blue-500/10 text-blue-500' :
+                                                                        'bg-gray-500/10 text-gray-500'
+                                                                    }`}>
+                                                                    {interview.status}
+                                                                </span>
+                                                            </div>
+                                                            <div className="mt-3 flex items-center text-[10px] text-gray-500 space-x-4">
+                                                                <span className="flex items-center"><Calendar size={12} className="mr-1" /> {formatDate(interview.startTime)}</span>
+                                                                <span className="flex items-center"><Award size={12} className="mr-1" /> {interview.score !== undefined ? `Result: ${interview.score}/10` : 'Result Pending'}</span>
+                                                            </div>
+                                                            {interview.feedback && (
+                                                                <p className="mt-2 p-2 bg-white/5 rounded-lg text-[10px] italic text-gray-400">
+                                                                    "{interview.feedback}"
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </section>
+                                    </>
+                                ) : null}
+                            </div>
+
+                            <div className="p-6 border-t border-white/5 bg-white/5 text-center">
+                                <p className="text-[10px] text-gray-500 font-medium">Placement data is synchronized with live recruitment drives.</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Delete Confirm Modal */}
-            {deleteConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-sm glass-dark border border-red-500/20 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-                        <div className="p-8 space-y-6">
-                            <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
-                                <Trash2 size={28} className="text-red-400" />
-                            </div>
-                            <div className="text-center space-y-2">
-                                <h3 className="text-xl font-black text-white">Delete Student?</h3>
-                                <p className="text-sm text-gray-400">
-                                    This action is <span className="text-red-400 font-bold">permanent</span> and cannot be undone. All data for this student will be lost.
-                                </p>
-                            </div>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setDeleteConfirm(null)}
-                                    className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white font-bold text-sm transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(deleteConfirm)}
-                                    className="flex-1 py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 font-bold text-sm transition-all"
-                                >
-                                    Delete Permanently
-                                </button>
+            {
+                deleteConfirm && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="w-full max-w-sm glass-dark border border-red-500/20 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+                            <div className="p-8 space-y-6">
+                                <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
+                                    <Trash2 size={28} className="text-red-400" />
+                                </div>
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-xl font-black text-white">Delete Student?</h3>
+                                    <p className="text-sm text-gray-400">
+                                        This action is <span className="text-red-400 font-bold">permanent</span> and cannot be undone. All data for this student will be lost.
+                                    </p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setDeleteConfirm(null)}
+                                        className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white font-bold text-sm transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+                                        className="flex-1 py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 font-bold text-sm transition-all"
+                                    >
+                                        Delete Permanently
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )
+            }
+
+            {/* Reset Password Modal */}
+            {resetPasswordId && (
+                <ResetPasswordModal
+                    userId={resetPasswordId}
+                    onClose={() => setResetPasswordId(null)}
+                    onReset={handleResetPassword}
+                    isResetting={isResetting}
+                    newPassword={newPassword}
+                    setNewPassword={setNewPassword}
+                />
             )}
-        </DashboardLayout>
+        </DashboardLayout >
+    );
+}
+
+function ResetPasswordModal({ userId, onClose, onReset, isResetting, newPassword, setNewPassword }: any) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="w-full max-w-sm glass-dark border border-amber-500/20 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
+                    <h2 className="text-xl font-bold text-white">Reset Password</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20} /></button>
+                </div>
+                <form onSubmit={onReset} className="p-8 space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">New Password</label>
+                        <input
+                            type="password"
+                            required
+                            minLength={6}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary outline-none transition-all"
+                            placeholder="Enter new password"
+                            autoFocus
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={isResetting}
+                        className="w-full py-3 bg-amber-500 text-black font-black rounded-xl shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-all disabled:opacity-50"
+                    >
+                        {isResetting ? <Loader2 size={18} className="animate-spin mx-auto" /> : "Confirm Reset"}
+                    </button>
+                </form>
+            </div>
+        </div>
     );
 }
