@@ -15,6 +15,7 @@ import { formatDate } from "@/lib/utils";
 export default function StudentDrivesPage() {
     const [drives, setDrives] = useState<any[]>([]);
     const [applications, setApplications] = useState<any[]>([]);
+    const [studentProfile, setStudentProfile] = useState<any | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [isLoading, setIsLoading] = useState(true);
@@ -22,13 +23,52 @@ export default function StudentDrivesPage() {
     useEffect(() => {
         Promise.all([
             fetch("/api/drives").then(res => res.json()),
-            fetch("/api/applications").then(res => res.json())
-        ]).then(([drivesData, appsData]) => {
-            setDrives(drivesData);
-            setApplications(appsData);
-            setIsLoading(false);
-        }).catch(() => setIsLoading(false));
+            fetch("/api/applications").then(res => res.json()),
+            fetch("/api/student/profile").then(res => res.ok ? res.json() : null)
+        ])
+            .then(([drivesData, appsData, profileData]) => {
+                setDrives(drivesData);
+                setApplications(appsData);
+                setStudentProfile(profileData);
+                setIsLoading(false);
+            })
+            .catch(() => setIsLoading(false));
     }, []);
+
+    const isEligibleForDrive = (drive: any) => {
+        if (!studentProfile) return false;
+
+        const cgpa = typeof studentProfile.cgpa === "number" ? studentProfile.cgpa : 0;
+        const backlogs =
+            typeof studentProfile.backlogs === "number"
+                ? studentProfile.backlogs
+                : typeof studentProfile.activeBacks === "number"
+                    ? studentProfile.activeBacks
+                    : 0;
+
+        const minCgpa = drive.eligibility?.minCgpa ?? 0;
+        const maxBacklogs =
+            typeof drive.eligibility?.maxBacklogs === "number"
+                ? drive.eligibility.maxBacklogs
+                : 0;
+        const allowedBranches: string[] = drive.eligibility?.allowedBranches || [];
+        const allowedPassoutYears: number[] = drive.eligibility?.passoutYears || [];
+        const studentPassoutYear =
+            typeof studentProfile.passingYear === "number"
+                ? studentProfile.passingYear
+                : undefined;
+
+        if (cgpa < minCgpa) return false;
+        if (backlogs > maxBacklogs) return false;
+        if (allowedBranches.length > 0 && studentProfile.branch && !allowedBranches.includes(studentProfile.branch)) {
+            return false;
+        }
+        if (allowedPassoutYears.length > 0 && studentPassoutYear && !allowedPassoutYears.includes(studentPassoutYear)) {
+            return false;
+        }
+
+        return true;
+    };
 
     const filteredDrives = drives.filter(drive => {
         const matchesSearch = drive.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -115,7 +155,19 @@ export default function StudentDrivesPage() {
                                                 <Clock size={12} className="mr-1.5" /> Deadline: {formatDate(drive.applicationDeadline)}
                                             </span>
                                             <span className="flex items-center text-xs text-emerald-500/80 px-3 py-1 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
-                                                <ShieldCheck size={12} className="mr-1.5" /> Eligible: {drive.eligibility.minCgpa}+ CGPA
+                                                <ShieldCheck size={12} className="mr-1.5" />
+                                                <span>
+                                                    Eligible: {drive.eligibility?.minCgpa ?? 0}+ CGPA
+                                                    {typeof drive.eligibility?.maxBacklogs === "number" && (
+                                                        <> · ≤ {drive.eligibility.maxBacklogs} backlogs</>
+                                                    )}
+                                                    {drive.eligibility?.allowedBranches?.length > 0 && (
+                                                        <> · {drive.eligibility.allowedBranches.join(", ")}</>
+                                                    )}
+                                                    {drive.eligibility?.passoutYears?.length > 0 && (
+                                                        <> · Passout: {drive.eligibility.passoutYears.join(", ")}</>
+                                                    )}
+                                                </span>
                                             </span>
                                         </div>
                                     </div>
@@ -134,6 +186,20 @@ export default function StudentDrivesPage() {
                                         ) : drive.status === 'expired' ? (
                                             <button disabled className="px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 font-bold cursor-not-allowed text-sm">
                                                 Expired
+                                            </button>
+                                        ) : !studentProfile ? (
+                                            <button
+                                                disabled
+                                                className="px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold cursor-not-allowed text-sm"
+                                            >
+                                                Complete profile to apply
+                                            </button>
+                                        ) : !isEligibleForDrive(drive) ? (
+                                            <button
+                                                disabled
+                                                className="px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl bg-gray-500/10 text-gray-400 border border-gray-500/20 font-bold cursor-not-allowed text-sm"
+                                            >
+                                                Not Eligible
                                             </button>
                                         ) : (
                                             <button

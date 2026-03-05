@@ -13,6 +13,7 @@ export interface IDrive extends Document {
         minCgpa: number;
         maxBacklogs: number;
         allowedBranches: string[];
+        passoutYears?: number[];
     };
     rounds: {
         name: string;
@@ -39,6 +40,7 @@ const DriveSchema: Schema = new Schema(
             minCgpa: { type: Number, default: 0 },
             maxBacklogs: { type: Number, default: 0 },
             allowedBranches: [{ type: String }],
+            passoutYears: [{ type: Number }],
         },
         rounds: [
             {

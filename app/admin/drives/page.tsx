@@ -114,9 +114,12 @@ export default function AdminDrivesPage() {
                                             {drive.companyName[0]}
                                         </div>
                                         <div className="flex space-x-2">
-                                            <button className="p-2 text-gray-500 hover:text-white transition-colors">
+                                            <Link
+                                                href={`/admin/drives/${drive._id}/edit`}
+                                                className="p-2 text-gray-500 hover:text-white transition-colors"
+                                            >
                                                 <Edit size={18} />
-                                            </button>
+                                            </Link>
                                             <button
                                                 onClick={() => handleDelete(drive._id)}
                                                 className="p-2 text-gray-500 hover:text-red-500 transition-colors"
@@ -141,7 +144,15 @@ export default function AdminDrivesPage() {
                                 </div>
 
                                 <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
-                                    <span className="text-lg font-bold text-white">{drive.package}</span>
+                                    <div className="space-y-2">
+                                        <span className="block text-lg font-bold text-white">{drive.package}</span>
+                                        <Link
+                                            href={`/admin/drives/${drive._id}/applications`}
+                                            className="inline-flex items-center text-[11px] font-semibold text-primary hover:text-primary/80"
+                                        >
+                                            <Users size={14} className="mr-1" /> View Applicants
+                                        </Link>
+                                    </div>
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${drive.status === 'upcoming' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
                                         drive.status === 'ongoing' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
                                             drive.status === 'expired' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :

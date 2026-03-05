@@ -40,6 +40,11 @@ export async function POST(req: Request) {
         if (drive.eligibility.allowedBranches.length > 0 && !drive.eligibility.allowedBranches.includes(student.branch)) {
             return NextResponse.json({ error: "Branch not eligible" }, { status: 400 });
         }
+        if (Array.isArray(drive.eligibility.passoutYears) && drive.eligibility.passoutYears.length > 0) {
+            if (!student.passingYear || !drive.eligibility.passoutYears.includes(student.passingYear)) {
+                return NextResponse.json({ error: "Passout year not eligible" }, { status: 400 });
+            }
+        }
 
         // 3. Create application
         const application = await Application.create({
@@ -56,20 +61,31 @@ export async function POST(req: Request) {
     }
 }
 
-// GET student's applications
-export async function GET() {
+// GET applications (student's own or admin filtered by drive)
+export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         await dbConnect();
 
+        const { searchParams } = new URL(req.url);
+        const driveId = searchParams.get("driveId");
+
         let applications;
         if ((session.user as any).role === UserRole.STUDENT) {
-            applications = await Application.find({ student: (session.user as any).id }).populate("drive");
+            const query: any = { student: (session.user as any).id };
+            if (driveId) {
+                query.drive = driveId;
+            }
+            applications = await Application.find(query).populate("drive");
         } else {
-            // Admin/Recruiter might want to see all applications (or filtered by drive)
-            applications = await Application.find({}).populate("student drive");
+            // Admin/Recruiter: all applications or filtered by drive
+            const query: any = {};
+            if (driveId) {
+                query.drive = driveId;
+            }
+            applications = await Application.find(query).populate("student drive");
         }
 
         return NextResponse.json(applications);

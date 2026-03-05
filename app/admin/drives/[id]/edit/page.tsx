@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Loader2, Plus, X } from "lucide-react";
 
@@ -15,36 +15,62 @@ const BRANCHES = [
     "Power Systems",
 ];
 
-export default function CreateDrivePage() {
+export default function EditDrivePage() {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        companyName: "",
-        role: "",
-        description: "",
-        package: "",
-        location: "",
-        driveDate: "",
-        applicationDeadline: "",
-        eligibility: {
-            minCgpa: 0,
-            maxBacklogs: 0,
-            allowedBranches: [] as string[],
-            passoutYears: [] as number[],
-        },
-        rounds: [{ name: "Aptitude", type: "aptitude" }] as any[],
-    });
+    const params = useParams();
+    const id = params?.id as string;
 
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [formData, setFormData] = useState<any | null>(null);
     const [newBranch, setNewBranch] = useState("");
     const [newPassoutYear, setNewPassoutYear] = useState("");
 
+    useEffect(() => {
+        if (!id) return;
+        const fetchDrive = async () => {
+            try {
+                const res = await fetch(`/api/drives/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setFormData({
+                        companyName: data.companyName || "",
+                        role: data.role || "",
+                        description: data.description || "",
+                        package: data.package || "",
+                        location: data.location || "",
+                        driveDate: data.driveDate ? data.driveDate.substring(0, 10) : "",
+                        applicationDeadline: data.applicationDeadline ? data.applicationDeadline.substring(0, 10) : "",
+                        eligibility: {
+                            minCgpa: data.eligibility?.minCgpa ?? 0,
+                            maxBacklogs: data.eligibility?.maxBacklogs ?? 0,
+                            allowedBranches: data.eligibility?.allowedBranches || [],
+                            passoutYears: data.eligibility?.passoutYears || [],
+                        },
+                        rounds: data.rounds && data.rounds.length > 0 ? data.rounds : [{ name: "Aptitude", type: "aptitude" }],
+                    });
+                } else {
+                    alert("Failed to load drive");
+                    router.push("/admin/drives");
+                }
+            } catch {
+                alert("Failed to load drive");
+                router.push("/admin/drives");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchDrive();
+    }, [id, router]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
+        if (!formData) return;
+        setIsSaving(true);
 
         try {
-            const res = await fetch("/api/drives", {
-                method: "POST",
+            const res = await fetch(`/api/drives/${id}`, {
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
             });
@@ -54,16 +80,17 @@ export default function CreateDrivePage() {
                 router.refresh();
             } else {
                 const data = await res.json();
-                alert(data.error || "Failed to create drive");
+                alert(data.error || "Failed to update drive");
             }
-        } catch (error) {
-            alert("Error creating drive");
+        } catch {
+            alert("Error updating drive");
         } finally {
-            setIsLoading(false);
+            setIsSaving(false);
         }
     };
 
     const addBranch = () => {
+        if (!formData) return;
         if (newBranch && !formData.eligibility.allowedBranches.includes(newBranch)) {
             setFormData({
                 ...formData,
@@ -76,7 +103,19 @@ export default function CreateDrivePage() {
         }
     };
 
+    const removeBranch = (branch: string) => {
+        if (!formData) return;
+        setFormData({
+            ...formData,
+            eligibility: {
+                ...formData.eligibility,
+                allowedBranches: formData.eligibility.allowedBranches.filter((b: string) => b !== branch),
+            },
+        });
+    };
+
     const addPassoutYear = () => {
+        if (!formData) return;
         const yearNum = parseInt(newPassoutYear, 10);
         if (!isNaN(yearNum) && !formData.eligibility.passoutYears.includes(yearNum)) {
             setFormData({
@@ -91,38 +130,42 @@ export default function CreateDrivePage() {
     };
 
     const removePassoutYear = (year: number) => {
+        if (!formData) return;
         setFormData({
             ...formData,
             eligibility: {
                 ...formData.eligibility,
-                passoutYears: formData.eligibility.passoutYears.filter((y) => y !== year),
-            },
-        });
-    };
-
-    const removeBranch = (branch: string) => {
-        setFormData({
-            ...formData,
-            eligibility: {
-                ...formData.eligibility,
-                allowedBranches: formData.eligibility.allowedBranches.filter((b) => b !== branch),
+                passoutYears: formData.eligibility.passoutYears.filter((y: number) => y !== year),
             },
         });
     };
 
     const addRound = () => {
+        if (!formData) return;
         setFormData({
             ...formData,
             rounds: [...formData.rounds, { name: "", type: "technical" }],
         });
     };
 
+    if (isLoading || !formData) {
+        return (
+            <DashboardLayout role="admin">
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="animate-spin text-primary" size={40} />
+                </div>
+            </DashboardLayout>
+        );
+    }
+
     return (
         <DashboardLayout role="admin">
             <div className="max-w-4xl mx-auto space-y-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">New Placement Drive</h1>
-                    <p className="text-gray-400 mt-2">Enter the details for the upcoming recruitment drive.</p>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white">Edit Placement Drive</h1>
+                        <p className="text-gray-400 mt-2">Update the details for this recruitment drive.</p>
+                    </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -133,7 +176,6 @@ export default function CreateDrivePage() {
                                 <input
                                     required
                                     type="text"
-                                    placeholder="e.g. Google"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                     value={formData.companyName}
                                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
@@ -144,7 +186,6 @@ export default function CreateDrivePage() {
                                 <input
                                     required
                                     type="text"
-                                    placeholder="e.g. SDE-1"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                     value={formData.role}
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -157,7 +198,6 @@ export default function CreateDrivePage() {
                             <textarea
                                 required
                                 rows={4}
-                                placeholder="Details about the role..."
                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -170,7 +210,6 @@ export default function CreateDrivePage() {
                                 <input
                                     required
                                     type="text"
-                                    placeholder="e.g. 12 LPA"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                     value={formData.package}
                                     onChange={(e) => setFormData({ ...formData, package: e.target.value })}
@@ -181,7 +220,6 @@ export default function CreateDrivePage() {
                                 <input
                                     required
                                     type="text"
-                                    placeholder="e.g. Bangalore / Remote"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                     value={formData.location}
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -224,10 +262,15 @@ export default function CreateDrivePage() {
                                         step="0.1"
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                         value={formData.eligibility.minCgpa}
-                                        onChange={(e) => setFormData({
-                                            ...formData,
-                                            eligibility: { ...formData.eligibility, minCgpa: parseFloat(e.target.value) }
-                                        })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                eligibility: {
+                                                    ...formData.eligibility,
+                                                    minCgpa: parseFloat(e.target.value),
+                                                },
+                                            })
+                                        }
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -236,10 +279,15 @@ export default function CreateDrivePage() {
                                         type="number"
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                         value={formData.eligibility.maxBacklogs}
-                                        onChange={(e) => setFormData({
-                                            ...formData,
-                                            eligibility: { ...formData.eligibility, maxBacklogs: parseInt(e.target.value) }
-                                        })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                eligibility: {
+                                                    ...formData.eligibility,
+                                                    maxBacklogs: parseInt(e.target.value, 10) || 0,
+                                                },
+                                            })
+                                        }
                                     />
                                 </div>
                             </div>
@@ -252,7 +300,9 @@ export default function CreateDrivePage() {
                                         value={newBranch}
                                         onChange={(e) => setNewBranch(e.target.value)}
                                     >
-                                        <option value="" className="bg-gray-900">Select Branch</option>
+                                        <option value="" className="bg-gray-900">
+                                            Select Branch
+                                        </option>
                                         {BRANCHES.map((branch) => (
                                             <option key={branch} value={branch} className="bg-gray-900">
                                                 {branch}
@@ -268,10 +318,15 @@ export default function CreateDrivePage() {
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    {formData.eligibility.allowedBranches.map((branch) => (
-                                        <span key={branch} className="flex items-center bg-primary/10 text-primary px-3 py-1 rounded-lg border border-primary/20 text-sm">
+                                    {formData.eligibility.allowedBranches.map((branch: string) => (
+                                        <span
+                                            key={branch}
+                                            className="flex items-center bg-primary/10 text-primary px-3 py-1 rounded-lg border border-primary/20 text-sm"
+                                        >
                                             {branch}
-                                            <button onClick={() => removeBranch(branch)} className="ml-2 hover:text-white"><X size={14} /></button>
+                                            <button onClick={() => removeBranch(branch)} className="ml-2 hover:text-white">
+                                                <X size={14} />
+                                            </button>
                                         </span>
                                     ))}
                                 </div>
@@ -286,7 +341,7 @@ export default function CreateDrivePage() {
                                         className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary"
                                         value={newPassoutYear}
                                         onChange={(e) => setNewPassoutYear(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPassoutYear())}
+                                        onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addPassoutYear())}
                                     />
                                     <button
                                         type="button"
@@ -297,10 +352,15 @@ export default function CreateDrivePage() {
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    {formData.eligibility.passoutYears.map((year) => (
-                                        <span key={year} className="flex items-center bg-white/5 text-white px-3 py-1 rounded-lg border border-white/10 text-sm">
+                                    {formData.eligibility.passoutYears.map((year: number) => (
+                                        <span
+                                            key={year}
+                                            className="flex items-center bg-white/5 text-white px-3 py-1 rounded-lg border border-white/10 text-sm"
+                                        >
                                             {year}
-                                            <button onClick={() => removePassoutYear(year)} className="ml-2 hover:text-red-400"><X size={14} /></button>
+                                            <button onClick={() => removePassoutYear(year)} className="ml-2 hover:text-red-400">
+                                                <X size={14} />
+                                            </button>
                                         </span>
                                     ))}
                                 </div>
@@ -319,7 +379,7 @@ export default function CreateDrivePage() {
                                 </button>
                             </div>
                             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                                {formData.rounds.map((round, index) => (
+                                {formData.rounds.map((round: any, index: number) => (
                                     <div key={index} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex gap-4 items-start">
                                         <div className="flex-1 space-y-3">
                                             <input
@@ -352,7 +412,12 @@ export default function CreateDrivePage() {
                                         {formData.rounds.length > 1 && (
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, rounds: formData.rounds.filter((_, i) => i !== index) })}
+                                                onClick={() =>
+                                                    setFormData({
+                                                        ...formData,
+                                                        rounds: formData.rounds.filter((_: any, i: number) => i !== index),
+                                                    })
+                                                }
                                                 className="text-gray-600 hover:text-red-500 transition-colors"
                                             >
                                                 <X size={16} />
@@ -366,11 +431,11 @@ export default function CreateDrivePage() {
 
                     <div className="flex justify-end pt-4 border-t border-white/5">
                         <button
-                            disabled={isLoading}
-                            className="px-12 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all flex items-center"
+                            disabled={isSaving}
+                            className="px-12 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all flex items-center disabled:opacity-60"
                         >
-                            {isLoading ? <Loader2 className="mr-2 animate-spin" /> : null}
-                            Publish Drive
+                            {isSaving ? <Loader2 className="mr-2 animate-spin" /> : null}
+                            Save Changes
                         </button>
                     </div>
                 </form>
@@ -378,3 +443,4 @@ export default function CreateDrivePage() {
         </DashboardLayout>
     );
 }
+
