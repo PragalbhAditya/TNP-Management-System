@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"student":{"$numberInt":"1"},"drive":{"$numberInt":"1"}},"name":"student_1_drive_1","unique":true}],"uuid":"76c7112b67ca4ff58e2d5876f11c5963","collectionName":"applications","type":"collection"}

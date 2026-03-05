@@ -6,7 +6,7 @@ import { Plus, Send, AlertCircle, CheckCircle } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 
 export default function AdminNotices() {
-    const { data: session } = useSession();
+    const { data: session } = useSession 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);

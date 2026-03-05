@@ -34,8 +34,8 @@ async function createSuperAdmin() {
         console.log('Connected to MongoDB');
 
         const name = 'Super Admin';
-        const email = 'superadmin@nce.com';
-        const password = 'superadminpassword'; // User should change this
+        const email = 'super-admin@nce.ac.in';
+        const password = 'Admin@123'; // User should change this
         const role = 'super-admin';
 
         const existingUser = await User.findOne({ email });

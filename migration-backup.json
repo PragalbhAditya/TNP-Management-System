@@ -1,0 +1,288 @@
+{
+  "auditlogs": [
+    {
+      "_id": "69a94cdda698f13baff7d851",
+      "action": "USER_REGISTERED",
+      "performedBy": {
+        "id": "69a94cdda698f13baff7d84f",
+        "name": "Aditya",
+        "email": "pragalbhaditya@gmail.com",
+        "role": "student"
+      },
+      "details": "New student account registered: pragalbhaditya@gmail.com",
+      "createdAt": "2026-03-05T09:29:01.380Z",
+      "updatedAt": "2026-03-05T09:29:01.380Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a94d02a698f13baff7d858",
+      "action": "USER_APPROVED",
+      "performedBy": {
+        "id": "69a87141c5adf177f6a130c6",
+        "name": "Super Admin",
+        "email": "superadmin@example.com",
+        "role": "super-admin"
+      },
+      "targetUser": {
+        "id": "69a94cdda698f13baff7d84f",
+        "name": "Aditya",
+        "email": "pragalbhaditya@gmail.com",
+        "role": "student"
+      },
+      "details": "Approved student account: pragalbhaditya@gmail.com",
+      "createdAt": "2026-03-05T09:29:38.261Z",
+      "updatedAt": "2026-03-05T09:29:38.261Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a94d48a698f13baff7d864",
+      "action": "USER_DELETED",
+      "performedBy": {
+        "id": "69a87141c5adf177f6a130c6",
+        "name": "Super Admin",
+        "email": "superadmin@example.com",
+        "role": "super-admin"
+      },
+      "targetUser": {
+        "id": "69a94cdda698f13baff7d84f",
+        "name": "Aditya",
+        "email": "pragalbhaditya@gmail.com",
+        "role": "student"
+      },
+      "details": "Permanently deleted student account: pragalbhaditya@gmail.com",
+      "createdAt": "2026-03-05T09:30:48.844Z",
+      "updatedAt": "2026-03-05T09:30:48.844Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a94d6ca698f13baff7d869",
+      "action": "USER_REGISTERED",
+      "performedBy": {
+        "id": "69a94d6ca698f13baff7d867",
+        "name": "Pragalbh Aditya",
+        "email": "pragalbhaditya@gmail.com",
+        "role": "student"
+      },
+      "details": "New student account registered: pragalbhaditya@gmail.com",
+      "createdAt": "2026-03-05T09:31:24.716Z",
+      "updatedAt": "2026-03-05T09:31:24.716Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a94d75a698f13baff7d86f",
+      "action": "USER_APPROVED",
+      "performedBy": {
+        "id": "69a87141c5adf177f6a130c6",
+        "name": "Super Admin",
+        "email": "superadmin@example.com",
+        "role": "super-admin"
+      },
+      "targetUser": {
+        "id": "69a94d6ca698f13baff7d867",
+        "name": "Pragalbh Aditya",
+        "email": "pragalbhaditya@gmail.com",
+        "role": "student"
+      },
+      "details": "Approved student account: pragalbhaditya@gmail.com",
+      "createdAt": "2026-03-05T09:31:33.712Z",
+      "updatedAt": "2026-03-05T09:31:33.712Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a97d43250e20051a3101bf",
+      "action": "USER_REGISTERED",
+      "performedBy": {
+        "id": "69a97d43250e20051a3101bd",
+        "name": "Hi",
+        "email": "hi@hi.com",
+        "role": "student"
+      },
+      "details": "New student account registered: hi@hi.com",
+      "createdAt": "2026-03-05T12:55:31.927Z",
+      "updatedAt": "2026-03-05T12:55:31.927Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a97d55250e20051a3101c6",
+      "action": "USER_APPROVED",
+      "performedBy": {
+        "id": "69a87141c5adf177f6a130c6",
+        "name": "Super Admin",
+        "email": "superadmin@example.com",
+        "role": "super-admin"
+      },
+      "targetUser": {
+        "id": "69a97d43250e20051a3101bd",
+        "name": "Hi",
+        "email": "hi@hi.com",
+        "role": "student"
+      },
+      "details": "Approved student account: hi@hi.com",
+      "createdAt": "2026-03-05T12:55:49.758Z",
+      "updatedAt": "2026-03-05T12:55:49.758Z",
+      "__v": 0
+    }
+  ],
+  "interviews": [],
+  "users": [
+    {
+      "_id": "69a86d81cd619575fdf02084",
+      "name": "Super Admin",
+      "email": "superadmin@nce.com",
+      "password": "$2b$10$p8a5lqerEzDlFyjB0gHFLucHMp.9HVPAtMERx8N9AWVVJ.d7m77uq",
+      "role": "super-admin",
+      "isVerified": true,
+      "__v": 0
+    },
+    {
+      "_id": "69a87141c5adf177f6a130c6",
+      "name": "Super Admin",
+      "email": "superadmin@example.com",
+      "password": "$2b$10$AewM638yl7CR8KmGzlb6WeWM4ITnT5QBrsyG1KzZn/uCwKXo9mCNm",
+      "role": "super-admin",
+      "isVerified": true,
+      "backlogs": 0,
+      "skills": [],
+      "placementStatus": "unplaced",
+      "createdAt": "2026-03-04T17:52:01.397Z",
+      "updatedAt": "2026-03-04T17:52:01.397Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a87141c5adf177f6a130c9",
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "password": "$2b$10$AewM638yl7CR8KmGzlb6WeWM4ITnT5QBrsyG1KzZn/uCwKXo9mCNm",
+      "role": "admin",
+      "isVerified": true,
+      "backlogs": 0,
+      "skills": [],
+      "placementStatus": "unplaced",
+      "createdAt": "2026-03-04T17:52:01.400Z",
+      "updatedAt": "2026-03-04T17:52:01.400Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a87141c5adf177f6a130cf",
+      "name": "Student User",
+      "email": "student@example.com",
+      "password": "$2b$10$AewM638yl7CR8KmGzlb6WeWM4ITnT5QBrsyG1KzZn/uCwKXo9mCNm",
+      "role": "student",
+      "isVerified": true,
+      "rollNumber": "STUD001",
+      "branch": "Computer Science",
+      "cgpa": 8.5,
+      "backlogs": 0,
+      "skills": [],
+      "placementStatus": "unplaced",
+      "createdAt": "2026-03-04T17:52:01.402Z",
+      "updatedAt": "2026-03-04T17:52:01.402Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a94d6ca698f13baff7d867",
+      "name": "Pragalbh Aditya",
+      "email": "pragalbhaditya@gmail.com",
+      "password": "$2b$10$EvYSYm7YaLEnhjaK7poeIOJs3vq1q6F53DMyMhpw3rzFKWqGiDQQ2",
+      "role": "student",
+      "isVerified": true,
+      "isBlocked": false,
+      "rollNumber": "25157109022",
+      "backlogs": 0,
+      "skills": [],
+      "placementStatus": "unplaced",
+      "createdAt": "2026-03-05T09:31:24.715Z",
+      "updatedAt": "2026-03-05T11:35:09.686Z",
+      "__v": 0,
+      "resumeUrl": "/uploads/resumes/69a94d6ca698f13baff7d867-1772710509684-Codes of Courses BEU.pdf"
+    },
+    {
+      "_id": "69a97d43250e20051a3101bd",
+      "name": "Hi",
+      "email": "hi@hi.com",
+      "password": "$2b$10$9udvb9mA1NxD0H.8WkRuvu8doI0.kFYkNY7zYx6gTIJCeva/I5Ng2",
+      "role": "student",
+      "isVerified": true,
+      "isBlocked": false,
+      "backlogs": 0,
+      "skills": [],
+      "placementStatus": "unplaced",
+      "dateOfBirth": "1111-11-11T00:00:00.000Z",
+      "createdAt": "2026-03-05T12:55:31.925Z",
+      "updatedAt": "2026-03-05T12:55:49.755Z",
+      "__v": 0
+    }
+  ],
+  "applications": [
+    {
+      "_id": "69a92122ff6599f732388563",
+      "student": "69a87141c5adf177f6a130cf",
+      "drive": "69a920f8ff6599f732388550",
+      "status": "applied",
+      "currentRound": 0,
+      "scores": [],
+      "appliedAt": "2026-03-05T06:22:26.142Z",
+      "updatedAt": "2026-03-05T06:22:26.142Z",
+      "__v": 0
+    }
+  ],
+  "exams": [],
+  "drives": [
+    {
+      "_id": "69a9078eff6599f732388528",
+      "companyName": "MeriCompany",
+      "role": "Majdoor",
+      "description": "hehheheheheheeh",
+      "package": "60",
+      "location": "Gharpe",
+      "driveDate": "2026-03-27T00:00:00.000Z",
+      "applicationDeadline": "2026-03-02T00:00:00.000Z",
+      "eligibility": {
+        "minCgpa": 2,
+        "maxBacklogs": 8,
+        "allowedBranches": []
+      },
+      "rounds": [
+        {
+          "name": "Aptitude",
+          "type": "hr",
+          "_id": "69a9078eff6599f732388529"
+        }
+      ],
+      "status": "expired",
+      "createdBy": "69a87141c5adf177f6a130c9",
+      "createdAt": "2026-03-05T04:33:18.165Z",
+      "updatedAt": "2026-03-05T06:28:14.581Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a920f8ff6599f732388550",
+      "companyName": "ds",
+      "role": "ds",
+      "description": "d",
+      "package": "ds",
+      "location": "sd",
+      "driveDate": "2026-03-21T00:00:00.000Z",
+      "applicationDeadline": "2026-03-06T00:00:00.000Z",
+      "eligibility": {
+        "minCgpa": 0,
+        "maxBacklogs": 0,
+        "allowedBranches": []
+      },
+      "rounds": [
+        {
+          "name": "Aptitude",
+          "type": "aptitude",
+          "_id": "69a920f8ff6599f732388551"
+        }
+      ],
+      "status": "upcoming",
+      "createdBy": "69a87141c5adf177f6a130c9",
+      "createdAt": "2026-03-05T06:21:44.440Z",
+      "updatedAt": "2026-03-05T06:21:44.440Z",
+      "__v": 0
+    }
+  ],
+  "notices": [],
+  "questions": []
+}
