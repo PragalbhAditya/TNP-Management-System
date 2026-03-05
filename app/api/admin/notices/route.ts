@@ -4,7 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/dbConnect";
 import Notice from "@/models/Notice";
 import User from "@/models/User";
-import auditLogger from "@/lib/auditLogger";
+import { writeAuditLog } from "@/lib/auditLogger";
 
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -28,12 +28,17 @@ export async function POST(req: NextRequest) {
             author: session.user.id,
         });
 
-        await auditLogger({
-            entityName: "Notice",
-            entityId: notice._id.toString(),
-            action: "create",
-            newData: notice.toObject(),
-            userId: session.user.id,
+        const actor = session.user as any;
+        await writeAuditLog({
+            action: "NOTICE_CREATED",
+            performedBy: {
+                id: actor.id,
+                name: actor.name ?? "",
+                email: actor.email ?? "",
+                role: actor.role,
+            },
+            details: `Created notice: ${title}`,
+            metadata: { noticeId: notice._id.toString() },
         });
 
         return NextResponse.json({ message: "Notice created successfully", notice }, { status: 201 });

@@ -15,7 +15,10 @@ export type AuditAction =
     | 'DRIVE_DELETED'
     | 'APPLICATION_SUBMITTED'
     | 'PLACEMENT_STATUS_CHANGED'
-    | 'ADMIN_LOGIN';
+    | 'ADMIN_LOGIN'
+    | 'NOTICE_CREATED'
+    | 'NOTICE_UPDATED'
+    | 'NOTICE_DELETED';
 
 export interface IAuditLog extends Document {
     action: AuditAction;
