@@ -7,11 +7,12 @@ import { UserRole } from "@/types/user";
 
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         await dbConnect();
-        const drive = await Drive.findById(params.id);
+        const drive = await Drive.findById(id);
         if (!drive) return NextResponse.json({ error: "Drive not found" }, { status: 404 });
         return NextResponse.json(drive);
     } catch (error) {
@@ -21,9 +22,10 @@ export async function GET(
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const session = await getServerSession(authOptions);
         if (!session || ((session.user as any).role !== UserRole.ADMIN && (session.user as any).role !== UserRole.SUPER_ADMIN)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -32,7 +34,7 @@ export async function PATCH(
         const data = await req.json();
         await dbConnect();
 
-        const drive = await Drive.findByIdAndUpdate(params.id, data, { new: true });
+        const drive = await Drive.findByIdAndUpdate(id, data, { new: true });
         return NextResponse.json(drive);
     } catch (error) {
         return NextResponse.json({ error: "Failed to update drive" }, { status: 500 });
@@ -41,16 +43,17 @@ export async function PATCH(
 
 export async function DELETE(
     req: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const session = await getServerSession(authOptions);
         if (!session || ((session.user as any).role !== UserRole.ADMIN && (session.user as any).role !== UserRole.SUPER_ADMIN)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         await dbConnect();
-        await Drive.findByIdAndDelete(params.id);
+        await Drive.findByIdAndDelete(id);
         return NextResponse.json({ message: "Drive deleted" });
     } catch (error) {
         return NextResponse.json({ error: "Failed to delete drive" }, { status: 500 });

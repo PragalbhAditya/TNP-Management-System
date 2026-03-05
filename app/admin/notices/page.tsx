@@ -6,7 +6,7 @@ import { Plus, Send, AlertCircle, CheckCircle } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 
 export default function AdminNotices() {
-    const { data: session } = useSession 
+    const { data: session } = useSession();
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,11 +103,10 @@ export default function AdminNotices() {
                         </div>
 
                         {toast && (
-                            <div className={`fixed top-6 right-6 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold animate-in slide-in-from-top-4 duration-300 ${
-                                toast.type === "success"
+                            <div className={`fixed top-6 right-6 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold animate-in slide-in-from-top-4 duration-300 ${toast.type === "success"
                                     ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
                                     : "bg-red-500/20 border border-red-500/40 text-red-300"
-                            }`}>
+                                }`}>
                                 {toast.type === "success" ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
                                 {toast.message}
                             </div>

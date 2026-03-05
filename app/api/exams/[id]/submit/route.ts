@@ -7,8 +7,9 @@ import User from "@/models/User";
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
+    const { id: examId } = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "student") {
@@ -19,7 +20,6 @@ export async function POST(
 
     try {
         const { answers } = await req.json();
-        const examId = params.id;
 
         const exam = await Exam.findById(examId).populate("questions");
 
@@ -45,8 +45,8 @@ export async function POST(
                 question.type === "mcq"
                     ? userAnswer === question.correctAnswer
                     : userAnswer &&
-                      userAnswer.toLowerCase().trim() ===
-                          question.correctAnswer.toLowerCase().trim();
+                    userAnswer.toLowerCase().trim() ===
+                    question.correctAnswer.toLowerCase().trim();
 
             if (isCorrect) correctCount++;
 

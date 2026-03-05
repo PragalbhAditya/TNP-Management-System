@@ -9,7 +9,7 @@ import { writeAuditLog } from "@/lib/auditLogger";
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !["admin", "super-admin"].includes(session.user.role)) {
+    if (!session?.user || !["admin", "super-admin"].includes((session.user as any).role)) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 

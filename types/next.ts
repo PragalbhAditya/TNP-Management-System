@@ -10,7 +10,7 @@ declare module "next-auth" {
             email?: string | null;
             image?: string | null;
             id?: string;
-            role?: \"student\" | \"admin\" | \"super-admin\";
+            role?: "student" | "admin" | "super-admin";
         };
     }
 }

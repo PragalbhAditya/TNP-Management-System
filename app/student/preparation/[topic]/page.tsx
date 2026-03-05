@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import {
     CheckCircle2,
@@ -11,7 +11,8 @@ import {
     Loader2
 } from "lucide-react";
 
-export default function MCQQuizPage({ params }: { params: { topic: string } }) {
+export default function MCQQuizPage({ params }: { params: Promise<{ topic: string }> }) {
+    const { topic } = use(params);
     const [questions, setQuestions] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -21,14 +22,15 @@ export default function MCQQuizPage({ params }: { params: { topic: string } }) {
     const [showResult, setShowResult] = useState(false);
 
     useEffect(() => {
-        fetch(`/api/questions?topic=${params.topic}`)
+        if (!topic) return;
+        fetch(`/api/questions?topic=${topic}`)
             .then(res => res.json())
             .then(data => {
                 setQuestions(data);
                 setIsLoading(false);
             })
             .catch(() => setIsLoading(false));
-    }, [params.topic]);
+    }, [topic]);
 
     const handleOptionSelect = (index: number) => {
         if (isAnswered) return;
@@ -101,7 +103,7 @@ export default function MCQQuizPage({ params }: { params: { topic: string } }) {
                         <Clock size={16} className="mr-2" />
                         <span>Question {currentIndex + 1} of {questions.length}</span>
                     </div>
-                    <span className="text-primary font-bold">Topic: {params.topic}</span>
+                    <span className="text-primary font-bold">Topic: {topic}</span>
                 </div>
 
                 <div className="glass-dark p-12 rounded-3xl border border-white/5 space-y-12 min-h-[400px]">
@@ -116,8 +118,8 @@ export default function MCQQuizPage({ params }: { params: { topic: string } }) {
                                 disabled={isAnswered}
                                 onClick={() => handleOptionSelect(pIndex)}
                                 className={`p-6 rounded-2xl text-left border text-lg transition-all ${selectedOption === pIndex
-                                        ? 'border-primary bg-primary/10 text-white'
-                                        : 'border-white/5 bg-white/5 text-gray-400 hover:border-white/20'
+                                    ? 'border-primary bg-primary/10 text-white'
+                                    : 'border-white/5 bg-white/5 text-gray-400 hover:border-white/20'
                                     } ${isAnswered && pIndex === currentQuestion.correctAnswer
                                         ? 'border-emerald-500 bg-emerald-500/10 text-white'
                                         : ''

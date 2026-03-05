@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Editor from "@monaco-editor/react";
 import {
     Play,
@@ -10,10 +10,12 @@ import {
     ChevronRight,
     ShieldAlert,
     Terminal,
-    RotateCcw
+    RotateCcw,
+    Loader2
 } from "lucide-react";
 
-export default function CodingPage({ params }: { params: { id: string } }) {
+export default function CodingPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [code, setCode] = useState("// Write your code here...");
     const [language, setLanguage] = useState("cpp");
     const [output, setOutput] = useState("");

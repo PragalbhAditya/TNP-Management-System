@@ -16,8 +16,9 @@ interface Question {
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
+    const { id: examId } = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "student") {
@@ -27,7 +28,6 @@ export async function GET(
     await dbConnect();
 
     try {
-        const examId = params.id;
         const exam = await Exam.findById(examId).populate("questions");
 
         if (!exam) {

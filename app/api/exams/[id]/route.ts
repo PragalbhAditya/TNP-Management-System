@@ -6,9 +6,10 @@ import Exam from "@/models/Exam";
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const session = await getServerSession(authOptions);
         if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,7 +17,7 @@ export async function GET(
 
         await dbConnect();
 
-        const exam = await Exam.findById(params.id)
+        const exam = await Exam.findById(id)
             .populate("questions")
             .populate("createdBy", "name email");
 
@@ -33,9 +34,10 @@ export async function GET(
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const session = await getServerSession(authOptions);
         if (!session || (session.user?.role !== "admin" && session.user?.role !== "super-admin")) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -46,7 +48,7 @@ export async function PATCH(
         await dbConnect();
 
         const exam = await Exam.findByIdAndUpdate(
-            params.id,
+            id,
             { $set: updateData },
             { new: true, runValidators: true }
         )
@@ -66,9 +68,10 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const session = await getServerSession(authOptions);
         if (!session || (session.user?.role !== "admin" && session.user?.role !== "super-admin")) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -76,7 +79,7 @@ export async function DELETE(
 
         await dbConnect();
 
-        const exam = await Exam.findByIdAndDelete(params.id);
+        const exam = await Exam.findByIdAndDelete(id);
 
         if (!exam) {
             return NextResponse.json({ error: "Exam not found" }, { status: 404 });

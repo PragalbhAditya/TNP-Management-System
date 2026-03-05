@@ -9,9 +9,10 @@ import { UserRole } from "@/types/user";
 
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const session = await getServerSession(authOptions);
         if (!session || ((session.user as any).role !== UserRole.SUPER_ADMIN && (session.user as any).role !== UserRole.ADMIN)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,7 +21,7 @@ export async function GET(
         await dbConnect();
 
         // Fetch applications with drive details
-        const applications = await Application.find({ student: params.id })
+        const applications = await Application.find({ student: id })
             .populate({
                 path: 'drive',
                 model: Drive,
@@ -29,7 +30,7 @@ export async function GET(
             .sort({ appliedAt: -1 });
 
         // Fetch interviews for these applications
-        const interviews = await Interview.find({ student: params.id })
+        const interviews = await Interview.find({ student: id })
             .populate({
                 path: 'drive',
                 model: Drive,
