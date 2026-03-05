@@ -58,20 +58,20 @@ export default function NoticePanel() {
     }
 
     return (
-        <div className="glass-dark p-6 rounded-[2.5rem] border border-white/5 flex flex-col justify-between relative overflow-hidden">
+        <div className="glass-dark p-4 md:p-6 rounded-[2.5rem] border border-white/5 flex flex-col justify-between relative overflow-hidden h-full">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Campus Notices</p>
             {notices.length === 0 ? (
-                <div className="text-gray-400">
-                    <BellRing size={24} className="mb-2 text-gray-500" />
-                    <p>No new notices at the moment.</p>
+                <div className="text-gray-400 flex flex-col items-center py-8">
+                    <BellRing size={24} className="mb-2 text-gray-600" />
+                    <p className="text-sm">No new notices.</p>
                 </div>
             ) : (
-                <div className="space-y-4 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800 pr-2">
+                <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                     {notices.map(notice => (
                         <div key={notice._id} className="pb-4 border-b border-white/5 last:border-b-0">
-                            <h3 className="text-lg font-bold text-white leading-tight">{notice.title}</h3>
-                            <p className="text-gray-400 text-sm mt-1">{notice.content}</p>
-                            <p className="text-gray-500 text-xs mt-2">Posted on {format(new Date(notice.createdAt), "PPP")}</p>
+                            <h3 className="text-base md:text-lg font-bold text-white leading-tight">{notice.title}</h3>
+                            <p className="text-gray-400 text-xs md:text-sm mt-1">{notice.content}</p>
+                            <p className="text-gray-500 text-[10px] mt-2">Posted on {format(new Date(notice.createdAt), "PPP")}</p>
                         </div>
                     ))}
                 </div>

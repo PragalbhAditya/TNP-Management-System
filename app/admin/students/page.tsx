@@ -177,55 +177,59 @@ export default function AdminStudentsPage() {
                 </div>
 
                 <div className="glass-dark rounded-[2.5rem] border border-white/5">
-                    <div className="p-8 border-b border-white/5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                    <div className="p-4 md:p-8 border-b border-white/5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 md:gap-6">
                         <div className="relative w-full xl:w-96">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                             <input
                                 type="text"
-                                placeholder="Search by name, email or roll number..."
+                                placeholder="Search students..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white outline-none focus:border-primary transition-all"
                             />
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
-                            <select
-                                value={branchFilter}
-                                onChange={(e) => setBranchFilter(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-xs text-white outline-none focus:border-primary transition-all cursor-pointer min-w-[140px]"
-                            >
-                                <option value="all" className="bg-gray-900">All Branches</option>
-                                {uniqueBranches.map(branch => (
-                                    <option key={branch} value={branch} className="bg-gray-900">{branch}</option>
-                                ))}
-                            </select>
-
-                            <select
-                                value={verificationFilter}
-                                onChange={(e) => setVerificationFilter(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-xs text-white outline-none focus:border-primary transition-all cursor-pointer min-w-[140px]"
-                            >
-                                <option value="all" className="bg-gray-900">All Status</option>
-                                <option value="verified" className="bg-gray-900">Verified</option>
-                                <option value="pending" className="bg-gray-900">Pending</option>
-                            </select>
-
-                            {(branchFilter !== "all" || verificationFilter !== "all" || searchQuery !== "") && (
-                                <button
-                                    onClick={() => {
-                                        setBranchFilter("all");
-                                        setVerificationFilter("all");
-                                        setSearchQuery("");
-                                    }}
-                                    className="px-4 py-3 text-xs text-gray-400 hover:text-white transition-colors flex items-center"
+                        <div className="flex flex-wrap items-center gap-3 md:gap-4 w-full xl:w-auto">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                                <select
+                                    value={branchFilter}
+                                    onChange={(e) => setBranchFilter(e.target.value)}
+                                    className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-xs text-white outline-none focus:border-primary transition-all cursor-pointer min-w-[120px]"
                                 >
-                                    <X size={14} className="mr-1" /> Clear
-                                </button>
-                            )}
+                                    <option value="all" className="bg-gray-900">All Branches</option>
+                                    {uniqueBranches.map(branch => (
+                                        <option key={branch} value={branch} className="bg-gray-900">{branch}</option>
+                                    ))}
+                                </select>
 
-                            <button className="flex-1 md:flex-none px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all ml-auto">
-                                Export Data
-                            </button>
+                                <select
+                                    value={verificationFilter}
+                                    onChange={(e) => setVerificationFilter(e.target.value)}
+                                    className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-xs text-white outline-none focus:border-primary transition-all cursor-pointer min-w-[120px]"
+                                >
+                                    <option value="all" className="bg-gray-900">All Status</option>
+                                    <option value="verified" className="bg-gray-900">Verified</option>
+                                    <option value="pending" className="bg-gray-900">Pending</option>
+                                </select>
+                            </div>
+
+                            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
+                                {(branchFilter !== "all" || verificationFilter !== "all" || searchQuery !== "") && (
+                                    <button
+                                        onClick={() => {
+                                            setBranchFilter("all");
+                                            setVerificationFilter("all");
+                                            setSearchQuery("");
+                                        }}
+                                        className="px-2 py-3 text-xs text-gray-400 hover:text-white transition-colors flex items-center"
+                                    >
+                                        <X size={14} className="mr-1" /> Clear
+                                    </button>
+                                )}
+
+                                <button className="flex-1 sm:flex-none px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                                    Export
+                                </button>
+                            </div>
                         </div>
                     </div>
 

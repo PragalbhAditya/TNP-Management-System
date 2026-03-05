@@ -49,13 +49,13 @@ export default function StudentDashboard() {
             <div className="space-y-8 pb-12">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-4xl font-black text-white tracking-tight">
+                        <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
                             Hey {session?.user?.name?.split(' ')[0]} 👋
                         </h1>
-                        <p className="text-gray-400 mt-2">Ready to level up your career today?</p>
+                        <p className="text-gray-400 mt-2 text-sm md:text-base">Ready to level up your career today?</p>
                     </div>
-                    <div className="flex space-x-2">
-                        <div className="glass-dark px-4 py-2 rounded-xl border border-white/5 flex items-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    <div className="flex space-x-2 w-full md:w-auto">
+                        <div className="glass-dark px-4 py-2 rounded-xl border border-white/5 flex items-center text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest flex-1 md:flex-none justify-center">
                             <Clock size={14} className="mr-2 text-primary" /> 23 Days to Next Drive
                         </div>
                     </div>

@@ -106,18 +106,18 @@ export default function MCQQuizPage({ params }: { params: Promise<{ topic: strin
                     <span className="text-primary font-bold">Topic: {topic}</span>
                 </div>
 
-                <div className="glass-dark p-12 rounded-3xl border border-white/5 space-y-12 min-h-[400px]">
-                    <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+                <div className="glass-dark p-6 md:p-12 rounded-3xl border border-white/5 space-y-6 md:space-y-12 min-h-[300px] md:min-h-[400px]">
+                    <h2 className="text-xl md:text-3xl font-bold text-white leading-tight">
                         {currentQuestion.text}
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                         {currentQuestion.options.map((option: string, pIndex: number) => (
                             <button
                                 key={pIndex}
                                 disabled={isAnswered}
                                 onClick={() => handleOptionSelect(pIndex)}
-                                className={`p-6 rounded-2xl text-left border text-lg transition-all ${selectedOption === pIndex
+                                className={`p-4 md:p-6 rounded-2xl text-left border text-base md:text-lg transition-all ${selectedOption === pIndex
                                     ? 'border-primary bg-primary/10 text-white'
                                     : 'border-white/5 bg-white/5 text-gray-400 hover:border-white/20'
                                     } ${isAnswered && pIndex === currentQuestion.correctAnswer
@@ -129,9 +129,9 @@ export default function MCQQuizPage({ params }: { params: Promise<{ topic: strin
                                     }`}
                             >
                                 <div className="flex justify-between items-center">
-                                    <span>{option}</span>
-                                    {isAnswered && pIndex === currentQuestion.correctAnswer && <CheckCircle2 size={20} className="text-emerald-500" />}
-                                    {isAnswered && selectedOption === pIndex && selectedOption !== currentQuestion.correctAnswer && <XCircle size={20} className="text-red-500" />}
+                                    <span className="flex-1 mr-2">{option}</span>
+                                    {isAnswered && pIndex === currentQuestion.correctAnswer && <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />}
+                                    {isAnswered && selectedOption === pIndex && selectedOption !== currentQuestion.correctAnswer && <XCircle size={18} className="text-red-500 shrink-0" />}
                                 </div>
                             </button>
                         ))}

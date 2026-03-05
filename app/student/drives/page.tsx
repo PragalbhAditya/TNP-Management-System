@@ -67,12 +67,12 @@ export default function StudentDrivesPage() {
                 </div>
 
                 {/* Search & Filter */}
-                <div className="glass-dark p-6 rounded-2xl border border-white/5 flex flex-wrap gap-4 items-center">
-                    <div className="flex-1 min-w-[300px] flex items-center bg-white/5 rounded-xl px-4 py-3 border border-white/5">
-                        <Search size={18} className="text-gray-500" />
+                <div className="glass-dark p-4 md:p-6 rounded-2xl border border-white/5 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+                    <div className="flex-1 flex items-center bg-white/5 rounded-xl px-4 py-3 border border-white/5">
+                        <Search size={18} className="text-gray-500 shrink-0" />
                         <input
                             type="text"
-                            placeholder="Search by company or role..."
+                            placeholder="Search company or role..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="bg-transparent border-none outline-none px-3 text-sm w-full text-white"
@@ -81,7 +81,7 @@ export default function StudentDrivesPage() {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-primary transition-all cursor-pointer"
+                        className="w-full sm:w-auto px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-primary transition-all cursor-pointer"
                     >
                         <option value="all" className="bg-gray-900">All Status</option>
                         <option value="upcoming" className="bg-gray-900">Upcoming</option>
@@ -121,27 +121,29 @@ export default function StudentDrivesPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center space-x-8 w-full md:w-auto border-t md:border-t-0 border-white/5 pt-6 md:pt-0">
-                                    <div className="text-right flex-1 md:flex-none">
-                                        <p className="text-xs text-gray-500 uppercase tracking-widest">Package</p>
-                                        <p className="text-xl font-bold text-white">{drive.package}</p>
+                                <div className="flex items-center md:flex-col lg:flex-row space-x-4 md:space-x-0 lg:space-x-8 w-full md:w-auto border-t md:border-t-0 border-white/5 pt-4 md:pt-0 md:items-end lg:items-center">
+                                    <div className="text-left md:text-right lg:text-right flex-1 md:flex-none md:mb-4 lg:mb-0">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">Package</p>
+                                        <p className="text-lg md:text-xl font-bold text-white leading-tight">{drive.package}</p>
                                     </div>
-                                    {isApplied(drive._id) ? (
-                                        <button disabled className="px-8 py-4 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-bold cursor-not-allowed min-w-[140px]">
-                                            Applied
-                                        </button>
-                                    ) : drive.status === 'expired' ? (
-                                        <button disabled className="px-8 py-4 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 font-bold cursor-not-allowed min-w-[140px]">
-                                            Deadline Passed
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleApply(drive._id)}
-                                            className="px-8 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center group/btn min-w-[140px] justify-center"
-                                        >
-                                            Apply Now <ArrowRight size={18} className="ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                                        </button>
-                                    )}
+                                    <div className="flex-shrink-0">
+                                        {isApplied(drive._id) ? (
+                                            <button disabled className="px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-bold cursor-not-allowed text-sm">
+                                                Applied
+                                            </button>
+                                        ) : drive.status === 'expired' ? (
+                                            <button disabled className="px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 font-bold cursor-not-allowed text-sm">
+                                                Expired
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleApply(drive._id)}
+                                                className="px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center group/btn text-sm"
+                                            >
+                                                Apply <ArrowRight size={16} className="ml-2 group-hover/btn:translate-x-1 transition-transform hidden sm:block" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))

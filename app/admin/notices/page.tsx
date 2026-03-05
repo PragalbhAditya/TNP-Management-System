@@ -64,13 +64,13 @@ export default function AdminNotices() {
         <DashboardLayout role={session?.user?.role || "student"}>
             <div className="space-y-8 pb-12">
                 <div>
-                    <h1 className="text-4xl font-black text-white tracking-tight flex items-center">
-                        <Plus size={32} className="mr-2 text-primary" /> Create Notice
+                    <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight flex items-center">
+                        <Plus size={28} className="mr-2 text-primary md:w-8 md:h-8" /> Create Notice
                     </h1>
-                    <p className="text-gray-400 mt-2">Post announcements to all students in the system</p>
+                    <p className="text-gray-400 mt-2 text-sm md:text-base">Post announcements to all students in the system</p>
                 </div>
 
-                <div className="glass-dark p-8 rounded-[2.5rem] border border-white/5">
+                <div className="glass-dark p-6 md:p-8 rounded-[2.5rem] border border-white/5">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label className="block text-sm font-bold text-gray-300 mb-3 uppercase tracking-widest">
@@ -104,8 +104,8 @@ export default function AdminNotices() {
 
                         {toast && (
                             <div className={`fixed top-6 right-6 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold animate-in slide-in-from-top-4 duration-300 ${toast.type === "success"
-                                    ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
-                                    : "bg-red-500/20 border border-red-500/40 text-red-300"
+                                ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
+                                : "bg-red-500/20 border border-red-500/40 text-red-300"
                                 }`}>
                                 {toast.type === "success" ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
                                 {toast.message}

@@ -42,15 +42,53 @@ const GENDERS = ['Male', 'Female', 'Other'];
 const CATEGORIES = ['GEN', 'OBC', 'SC', 'ST', 'EWS'];
 const BOARDS = [
     'CBSE',
-    'ICSE',
-    'ISC',
+    'CISCE',
     'State Board',
     'Other'
 ];
 
+const ENTRY_TYPES = ['Regular', 'Lateral'];
+const RELIGIONS = ['Hinduism', 'Islam', 'Christianity', 'Sikhism', 'Buddhism', 'Jainism', 'Other'];
+
 const getBranches = (course: string) => {
     if (course === 'M.Tech') return BRANCHES_MTECH;
     return BRANCHES_BTECH;
+};
+
+const COLLEGE_MAPPING: { [key: string]: string } = {
+    "157": "Government Engineering College Sheikhpura",
+    "142": "Government Engineering College Kishanganj",
+    "153": "Government Engineering College Arwal",
+    "151": "Government Engineering College Siwan",
+    "165": "Shri Phanishwar Nath Renu Engineering College Banka",
+    "107": "Muzaffarpur Institute of Technology Muzaffarpur",
+    "108": "Bhagalpur College of Engineering Bhagalpur",
+    "124": "Sershah Engineering College Sasaram",
+    "141": "Government Engineering College Nawada",
+    "158": "Government Engineering College Lakhisarai",
+    "133": "Supaul College of Engineering Supaul",
+    "117": "Lok Nayak Jai Prakash Institute of Technology Chhapra",
+    "109": "Nalanda College of Engineering Nalanda",
+    "159": "Government Engineering College Samastipur",
+    "144": "Government Engineering College Munger",
+    "155": "Government Engineering College Buxar",
+    "150": "Government Engineering College Madhubani",
+    "131": "Purnea College of Engineering Purnea",
+    "135": "Government Engineering College Vaishali",
+    "125": "Rashtrakavi Ramdhari Singh Dinkar College of Engineering Begusarai",
+    "127": "Sitamarhi Institute of Technology Sitamarhi",
+    "129": "Katihar Engineering College Katihar",
+    "132": "Saharsa College of Engineering Saharsa",
+    "156": "Government Engineering College Bhojpur",
+    "110": "Gaya College of Engineering Gaya",
+    "154": "Government Engineering College Khagaria",
+    "152": "Government Engineering College Jehanabad",
+    "126": "Bakhtiyarpur College of Engineering Patna",
+    "113": "Motihari College Of Engineering Motihari",
+    "128": "B P Mandal College of Engineering Madhepura",
+    "146": "Government Engineering College West Champaran",
+    "111": "Darbhanga College of Engineering Darbhanga",
+    "134": "Government Engineering College Banka"
 };
 
 export default function StudentProfilePage() {
@@ -60,7 +98,9 @@ export default function StudentProfilePage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isUploadingMarksheet, setIsUploadingMarksheet] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [marksheetSuccess, setMarksheetSuccess] = useState(false);
     const [editedData, setEditedData] = useState<any>({});
     const [newSkill, setNewSkill] = useState("");
     const [newSemester, setNewSemester] = useState({ semester: "", sgpa: "" });
@@ -137,6 +177,63 @@ export default function StudentProfilePage() {
         }
     };
 
+    const handleMarksheetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingMarksheet(true);
+        const formData = new FormData();
+        formData.append("marksheet", file);
+
+        try {
+            const res = await fetch("/api/student/marksheet", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (res.ok) {
+                setMarksheetSuccess(true);
+                setTimeout(() => setMarksheetSuccess(false), 3000);
+                fetchProfile();
+            } else {
+                alert("Failed to upload marksheet");
+            }
+        } catch (error) {
+            console.error("Marksheet upload error:", error);
+            alert("Failed to upload marksheet");
+        } finally {
+            setIsUploadingMarksheet(false);
+        }
+    };
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingPhoto(true);
+        const formData = new FormData();
+        formData.append("photo", file);
+
+        try {
+            const res = await fetch("/api/student/photo", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (res.ok) {
+                fetchProfile();
+            } else {
+                alert("Failed to upload photo");
+            }
+        } catch (error) {
+            console.error("Photo upload error:", error);
+            alert("Failed to upload photo");
+        } finally {
+            setIsUploadingPhoto(false);
+        }
+    };
+
     const addSkill = () => {
         if (!newSkill.trim()) return;
         const currentSkills = editedData.skills || [];
@@ -158,7 +255,7 @@ export default function StudentProfilePage() {
         const currentSGPA = editedData.semesterWiseSGPA || [];
         const semesterNum = parseInt(newSemester.semester);
         const sgpaNum = parseFloat(newSemester.sgpa);
-        
+
         // Check if semester already exists
         const exists = currentSGPA.some((s: any) => s.semester === semesterNum);
         if (!exists && semesterNum > 0 && sgpaNum >= 0 && sgpaNum <= 10) {
@@ -194,19 +291,19 @@ export default function StudentProfilePage() {
             <div className="max-w-6xl mx-auto space-y-8">
                 {/* Profile Completion Alert */}
                 {needsSetup && !isEditing && (
-                    <div className="glass-dark border border-amber-500/20 bg-amber-500/5 p-6 rounded-3xl flex items-center justify-between gap-4">
+                    <div className="glass-dark border border-amber-500/20 bg-amber-500/5 p-4 md:p-6 rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
                                 <UserIcon size={24} />
                             </div>
                             <div>
                                 <h3 className="text-amber-200 font-bold">Incomplete Profile</h3>
-                                <p className="text-sm text-amber-500/60">Please complete your information to participate in placement drives.</p>
+                                <p className="text-sm text-amber-500/60 leading-tight">Please complete your information to participate in placement drives.</p>
                             </div>
                         </div>
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="bg-amber-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="w-full sm:w-auto bg-amber-500 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                             Complete Profile
                         </button>
@@ -225,8 +322,25 @@ export default function StudentProfilePage() {
                                     <Pencil size={16} />
                                 </button>
                             )}
-                            <div className="w-32 h-32 rounded-3xl bg-gradient-to-tr from-primary to-accent mx-auto mb-6 shadow-2xl shadow-primary/20 flex items-center justify-center text-white text-4xl font-black">
-                                {user?.name?.[0]}
+                            <div className="relative group/avatar mx-auto mb-6">
+                                <div className="w-32 h-32 rounded-3xl overflow-hidden bg-gradient-to-tr from-primary to-accent shadow-2xl shadow-primary/20 flex items-center justify-center text-white text-4xl font-black">
+                                    {user?.image ? (
+                                        <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user?.name?.[0]
+                                    )}
+                                </div>
+                                <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/avatar:opacity-100 transition-all rounded-3xl cursor-pointer">
+                                    {isUploadingPhoto ? (
+                                        <Loader2 className="animate-spin text-white" size={32} />
+                                    ) : (
+                                        <div className="text-center">
+                                            <Upload className="text-white mx-auto mb-1" size={24} />
+                                            <p className="text-[10px] text-white font-bold">Update Photo</p>
+                                        </div>
+                                    )}
+                                    <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={isUploadingPhoto} />
+                                </label>
                             </div>
                             <h2 className="text-2xl font-bold text-white tracking-tight">{user?.name}</h2>
                             <p className="text-gray-400 text-sm mt-1 uppercase tracking-widest font-bold">
@@ -342,17 +456,62 @@ export default function StudentProfilePage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="space-y-1.5">
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Registration Number</p>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Roll Number</p>
                                     {isEditing ? (
                                         <input
                                             type="text"
                                             value={editedData.rollNumber || ""}
                                             onChange={(e) => setEditedData({ ...editedData, rollNumber: e.target.value })}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                            placeholder="Enter Registration Number"
+                                            placeholder="Enter Roll Number"
                                         />
                                     ) : (
                                         <p className="text-lg font-bold text-white font-mono">{user?.rollNumber || "Not Provided"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Registration Number</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            value={editedData.registrationNumber || ""}
+                                            onChange={(e) => {
+                                                const regNo = e.target.value;
+                                                let newUpdate = { ...editedData, registrationNumber: regNo };
+
+                                                // 1,2 digits (index 0-1) are Year of Admission
+                                                if (regNo.length >= 2) {
+                                                    const yearShort = regNo.substring(0, 2);
+                                                    if (!isNaN(parseInt(yearShort))) {
+                                                        const admissionYear = 2000 + parseInt(yearShort);
+                                                        newUpdate.admissionYear = admissionYear;
+                                                        // Auto-calculate passing year (assuming 4 years for B.Tech)
+                                                        newUpdate.passingYear = admissionYear + (editedData.course === 'M.Tech' ? 2 : 4);
+                                                    }
+                                                }
+
+                                                // 3,4,5 digits (index 2-4) are Branch Code
+                                                if (regNo.length >= 5) {
+                                                    const branchCode = regNo.substring(2, 5);
+                                                    newUpdate.branchCode = branchCode;
+                                                }
+
+                                                // 6,7,8 digits (index 5-7) are College Code
+                                                if (regNo.length >= 8) {
+                                                    const collegeCode = regNo.substring(5, 8);
+                                                    if (COLLEGE_MAPPING[collegeCode]) {
+                                                        newUpdate.collegeName = COLLEGE_MAPPING[collegeCode];
+                                                        newUpdate.collegeCode = collegeCode;
+                                                    }
+                                                }
+                                                setEditedData(newUpdate);
+                                            }}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="Enter Registration Number"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white font-mono">{user?.registrationNumber || "Not Provided"}</p>
                                     )}
                                 </div>
 
@@ -389,17 +548,93 @@ export default function StudentProfilePage() {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Batch / Passing Year</p>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Branch Code</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            value={editedData.branchCode || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, branchCode: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="e.g., CSE"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.branchCode || "Not Set"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Current Year</p>
                                     {isEditing ? (
                                         <input
                                             type="number"
-                                            value={editedData.batchYear || ""}
-                                            onChange={(e) => setEditedData({ ...editedData, batchYear: parseInt(e.target.value) })}
+                                            value={editedData.currentYear || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, currentYear: parseInt(e.target.value) })}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                            placeholder="e.g., 2024"
+                                            placeholder="e.g., 3"
                                         />
                                     ) : (
-                                        <p className="text-lg font-bold text-white">{user?.batchYear || "Not Set"}</p>
+                                        <p className="text-lg font-bold text-white">{user?.currentYear || "Not Set"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Current Semester</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="number"
+                                            value={editedData.currentSemester || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, currentSemester: parseInt(e.target.value) })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="e.g., 5"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.currentSemester || "Not Set"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Year of Admission</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="number"
+                                            value={editedData.admissionYear || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, admissionYear: parseInt(e.target.value) })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="e.g., 2021"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.admissionYear || "Not Set"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Year of Passing Out</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="number"
+                                            value={editedData.passingYear || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, passingYear: parseInt(e.target.value) })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="e.g., 2025"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.passingYear || "Not Set"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Entry Type</p>
+                                    {isEditing ? (
+                                        <select
+                                            value={editedData.entryType || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, entryType: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary appearance-none cursor-pointer"
+                                        >
+                                            <option value="" className="bg-gray-900">Select Entry Type</option>
+                                            {ENTRY_TYPES.map(t => <option key={t} value={t} className="bg-gray-900">{t}</option>)}
+                                        </select>
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.entryType || "Not Set"}</p>
                                     )}
                                 </div>
 
@@ -450,17 +685,66 @@ export default function StudentProfilePage() {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Aadhaar (Optional)</p>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Religion</p>
+                                    {isEditing ? (
+                                        <select
+                                            value={editedData.religion || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, religion: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary appearance-none cursor-pointer"
+                                        >
+                                            <option value="" className="bg-gray-900">Select Religion</option>
+                                            {RELIGIONS.map(r => <option key={r} value={r} className="bg-gray-900">{r}</option>)}
+                                        </select>
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.religion || "Not Set"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Aadhaar Number</p>
                                     {isEditing ? (
                                         <input
                                             type="text"
                                             value={editedData.aadhaar || ""}
-                                            onChange={(e) => setEditedData({ ...editedData, aadhaar: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 12);
+                                                setEditedData({ ...editedData, aadhaar: val });
+                                            }}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                            placeholder="Enter Aadhaar"
+                                            placeholder="12-digit Aadhaar Number"
                                         />
                                     ) : (
-                                        <p className="text-lg font-bold text-white">{user?.aadhaar ? '*'.repeat(user.aadhaar.length - 4) + user.aadhaar.slice(-4) : "Not Provided"}</p>
+                                        <p className="text-lg font-bold text-white">{user?.aadhaar ? user.aadhaar.replace(/\d(?=\d{4})/g, "*") : "Not Provided"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">College Name</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            value={editedData.collegeName || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, collegeName: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="College Name"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.collegeName || "Not Provided"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">College Code</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            value={editedData.collegeCode || ""}
+                                            onChange={(e) => setEditedData({ ...editedData, collegeCode: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="College Code"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.collegeCode || "Not Provided"}</p>
                                     )}
                                 </div>
                             </div>
@@ -484,12 +768,33 @@ export default function StudentProfilePage() {
                                         <input
                                             type="tel"
                                             value={editedData.contact || ""}
-                                            onChange={(e) => setEditedData({ ...editedData, contact: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                setEditedData({ ...editedData, contact: val });
+                                            }}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                            placeholder="Enter Phone Number"
+                                            placeholder="10-digit Phone Number"
                                         />
                                     ) : (
                                         <p className="text-lg font-bold text-white">{user?.contact || "Not Provided"}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">WhatsApp Number</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="tel"
+                                            value={editedData.whatsappNumber || ""}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                setEditedData({ ...editedData, whatsappNumber: val });
+                                            }}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            placeholder="10-digit WhatsApp Number"
+                                        />
+                                    ) : (
+                                        <p className="text-lg font-bold text-white">{user?.whatsappNumber || "Not Provided"}</p>
                                     )}
                                 </div>
 
@@ -499,9 +804,12 @@ export default function StudentProfilePage() {
                                         <input
                                             type="tel"
                                             value={editedData.alternatePhone || ""}
-                                            onChange={(e) => setEditedData({ ...editedData, alternatePhone: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                setEditedData({ ...editedData, alternatePhone: val });
+                                            }}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                            placeholder="Alternate Phone (Optional)"
+                                            placeholder="10-digit Alt Phone"
                                         />
                                     ) : (
                                         <p className="text-lg font-bold text-white">{user?.alternatePhone || "Not Provided"}</p>
@@ -532,9 +840,23 @@ export default function StudentProfilePage() {
                             </h3>
 
                             <div className="space-y-8">
-                                {/* 10th Board */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="md:col-span-1 space-y-1.5">
+                                {/* 10th Details */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">10th School Name</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="text"
+                                                value={editedData.school10th || ""}
+                                                onChange={(e) => setEditedData({ ...editedData, school10th: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                                placeholder="School Name"
+                                            />
+                                        ) : (
+                                            <p className="text-lg font-bold text-white">{user?.school10th || "Not Set"}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
                                         <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">10th Board</p>
                                         {isEditing ? (
                                             <select
@@ -549,7 +871,7 @@ export default function StudentProfilePage() {
                                             <p className="text-lg font-bold text-white">{user?.board10th || "Not Set"}</p>
                                         )}
                                     </div>
-                                    <div className="md:col-span-1 space-y-1.5">
+                                    <div className="space-y-1.5">
                                         <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">10th Percentage</p>
                                         {isEditing ? (
                                             <input
@@ -564,8 +886,8 @@ export default function StudentProfilePage() {
                                             <p className="text-lg font-bold text-white">{user?.percentage10th ? user.percentage10th.toFixed(2) : "Not Set"}%</p>
                                         )}
                                     </div>
-                                    <div className="md:col-span-1 space-y-1.5">
-                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">10th Year</p>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">10th Passing Year</p>
                                         {isEditing ? (
                                             <input
                                                 type="number"
@@ -580,9 +902,23 @@ export default function StudentProfilePage() {
                                     </div>
                                 </div>
 
-                                {/* 12th Board */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="md:col-span-1 space-y-1.5">
+                                {/* 12th Details */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-white/5">
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">12th School Name</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="text"
+                                                value={editedData.school12th || ""}
+                                                onChange={(e) => setEditedData({ ...editedData, school12th: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                                placeholder="School Name"
+                                            />
+                                        ) : (
+                                            <p className="text-lg font-bold text-white">{user?.school12th || "Not Set"}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
                                         <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">12th Board</p>
                                         {isEditing ? (
                                             <select
@@ -597,7 +933,7 @@ export default function StudentProfilePage() {
                                             <p className="text-lg font-bold text-white">{user?.board12th || "Not Set"}</p>
                                         )}
                                     </div>
-                                    <div className="md:col-span-1 space-y-1.5">
+                                    <div className="space-y-1.5">
                                         <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">12th Percentage</p>
                                         {isEditing ? (
                                             <input
@@ -606,14 +942,14 @@ export default function StudentProfilePage() {
                                                 value={editedData.percentage12th || ""}
                                                 onChange={(e) => setEditedData({ ...editedData, percentage12th: parseFloat(e.target.value) })}
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                                placeholder="e.g., 88.75"
+                                                placeholder="e.g., 85.50"
                                             />
                                         ) : (
                                             <p className="text-lg font-bold text-white">{user?.percentage12th ? user.percentage12th.toFixed(2) : "Not Set"}%</p>
                                         )}
                                     </div>
-                                    <div className="md:col-span-1 space-y-1.5">
-                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">12th Year</p>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">12th Passing Year</p>
                                         {isEditing ? (
                                             <input
                                                 type="number"
@@ -628,105 +964,111 @@ export default function StudentProfilePage() {
                                     </div>
                                 </div>
 
-                                {/* Diploma (if applicable) */}
-                                <div className="border-t border-white/5 pt-6">
-                                    <h4 className="text-sm font-bold text-gray-300 mb-4">Diploma (if applicable)</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="space-y-1.5">
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Diploma Board</p>
-                                            {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    value={editedData.diplomaBoard || ""}
-                                                    onChange={(e) => setEditedData({ ...editedData, diplomaBoard: e.target.value })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                                    placeholder="e.g., AICTE Approved"
-                                                />
-                                            ) : (
-                                                <p className="text-lg font-bold text-white">{user?.diplomaBoard || "Not Provided"}</p>
-                                            )}
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Diploma Percentage</p>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={editedData.diplomaPercentage || ""}
-                                                    onChange={(e) => setEditedData({ ...editedData, diplomaPercentage: parseFloat(e.target.value) })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                                    placeholder="e.g., 82.00"
-                                                />
-                                            ) : (
-                                                <p className="text-lg font-bold text-white">{user?.diplomaPercentage ? user.diplomaPercentage.toFixed(2) : "Not Provided"}%</p>
-                                            )}
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Diploma Year</p>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    value={editedData.diplomaYear || ""}
-                                                    onChange={(e) => setEditedData({ ...editedData, diplomaYear: parseInt(e.target.value) })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                                    placeholder="e.g., 2020"
-                                                />
-                                            ) : (
-                                                <p className="text-lg font-bold text-white">{user?.diplomaYear || "Not Provided"}</p>
-                                            )}
-                                        </div>
+                                {/* Diploma Details */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-white/5">
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Diploma College Name</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="text"
+                                                value={editedData.diplomaCollege || ""}
+                                                onChange={(e) => setEditedData({ ...editedData, diplomaCollege: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                                placeholder="College Name"
+                                            />
+                                        ) : (
+                                            <p className="text-lg font-bold text-white">{user?.diplomaCollege || "Not Provided"}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Diploma Percentage / CGPA</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                value={editedData.diplomaPercentage || ""}
+                                                onChange={(e) => setEditedData({ ...editedData, diplomaPercentage: parseFloat(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                                placeholder="e.g., 85.50"
+                                            />
+                                        ) : (
+                                            <p className="text-lg font-bold text-white">{user?.diplomaPercentage ? user.diplomaPercentage.toFixed(2) : "Not Set"}%</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Diploma Passing Year</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="number"
+                                                value={editedData.diplomaYear || ""}
+                                                onChange={(e) => setEditedData({ ...editedData, diplomaYear: parseInt(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                                placeholder="e.g., 2020"
+                                            />
+                                        ) : (
+                                            <p className="text-lg font-bold text-white">{user?.diplomaYear || "Not Set"}</p>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Current Academic Performance */}
-                                <div className="border-t border-white/5 pt-6">
-                                    <h4 className="text-sm font-bold text-gray-300 mb-4">Current Academic Performance</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Current CGPA / Percentage</p>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    max="10"
-                                                    min="0"
-                                                    value={editedData.cgpa || ""}
-                                                    onChange={(e) => setEditedData({ ...editedData, cgpa: parseFloat(e.target.value) })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                                    placeholder="e.g., 8.75"
-                                                />
-                                            ) : (
-                                                <p className="text-3xl font-black text-primary">{user?.cgpa ? user.cgpa.toFixed(2) : "0.00"}</p>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Active Backlogs</p>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    value={editedData.activeBacks || 0}
-                                                    onChange={(e) => setEditedData({ ...editedData, activeBacks: parseInt(e.target.value) })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                                />
-                                            ) : (
-                                                <p className="text-3xl font-black text-amber-500">{user?.activeBacks || 0}</p>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Total Backlogs (Active + Cleared)</p>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    value={editedData.totalBacklogs || 0}
-                                                    onChange={(e) => setEditedData({ ...editedData, totalBacklogs: parseInt(e.target.value) })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
-                                                />
-                                            ) : (
-                                                <p className="text-lg font-bold text-white">{user?.totalBacklogs || 0}</p>
-                                            )}
-                                        </div>
+                                {/* B.Tech Details */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-white/5">
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">B.Tech Current CGPA</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                value={editedData.cgpa || ""}
+                                                onChange={(e) => setEditedData({ ...editedData, cgpa: parseFloat(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                                placeholder="e.g., 8.50"
+                                            />
+                                        ) : (
+                                            <p className="text-3xl font-black text-primary">{user?.cgpa ? user.cgpa.toFixed(2) : "0.00"}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Calculated Till Sem</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="number"
+                                                value={editedData.cgpaUpToSemester || ""}
+                                                onChange={(e) => setEditedData({ ...editedData, cgpaUpToSemester: parseInt(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                                placeholder="e.g., 4"
+                                            />
+                                        ) : (
+                                            <p className="text-lg font-bold text-white">{user?.cgpaUpToSemester || "Not Set"}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Active Backs</p>
+                                        {isEditing ? (
+                                            <input
+                                                type="number"
+                                                value={editedData.activeBacks || 0}
+                                                onChange={(e) => setEditedData({ ...editedData, activeBacks: parseInt(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary"
+                                            />
+                                        ) : (
+                                            <p className="text-3xl font-black text-amber-500">{user?.activeBacks || 0}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">Willing to relocate?</p>
+                                        {isEditing ? (
+                                            <select
+                                                value={editedData.willingToRelocate ? "Yes" : "No"}
+                                                onChange={(e) => setEditedData({ ...editedData, willingToRelocate: e.target.value === "Yes" })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-primary appearance-none cursor-pointer"
+                                            >
+                                                <option value="Yes" className="bg-gray-900">Yes</option>
+                                                <option value="No" className="bg-gray-900">No</option>
+                                            </select>
+                                        ) : (
+                                            <p className="text-lg font-bold text-white">{user?.willingToRelocate ? "Yes" : "No"}</p>
+                                        )}
                                     </div>
                                 </div>
 

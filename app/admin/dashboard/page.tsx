@@ -24,12 +24,12 @@ export default function AdminDashboard() {
     return (
         <DashboardLayout role="admin">
             <div className="space-y-8">
-                <div className="flex justify-between items-end">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h1 className="text-3xl font-bold text-white">Admin Control Panel</h1>
                         <p className="text-gray-400 mt-2">Overseeing campus recruitment drives and student performance.</p>
                     </div>
-                    <button className="px-6 py-3 bg-primary text-white rounded-xl font-semibold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                    <button className="w-full md:w-auto px-6 py-3 bg-primary text-white rounded-xl font-semibold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
                         + New Placement Drive
                     </button>
                 </div>
